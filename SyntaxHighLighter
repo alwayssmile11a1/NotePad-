@@ -1,0 +1,116 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Text.RegularExpressions;
+
+namespace WindowsFormsApplication6
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void codeRichTextBox_TextChanged(object sender, EventArgs e)
+        {
+            
+            
+            // MANDATORY - focuses a label before highlighting (avoids blinking)
+            titleLabel.Focus();
+            // saving the original caret position + forecolor
+            int originalIndex = codeRichTextBox.SelectionStart;
+            int originalLength = codeRichTextBox.SelectionLength;
+            Color originalColor = Color.Black;
+
+            // Find the start of the current line.
+            int m_nLineStart = originalIndex;
+            while ((m_nLineStart > 0) && codeRichTextBox.Text[m_nLineStart - 1] != '\n')
+                m_nLineStart--;
+         
+
+            // Find the end of the current line.
+            int m_nLineEnd = originalIndex;
+            while ((m_nLineEnd < codeRichTextBox.Text.Length) && (codeRichTextBox.Text[m_nLineEnd] != '\n'))
+                m_nLineEnd++;
+            
+
+            // Calculate the length of the line.
+            int m_nLineLength = m_nLineEnd - m_nLineStart;
+
+            // Get the current line.
+            string m_strLine = codeRichTextBox.Text.Substring(m_nLineStart, m_nLineLength);
+           
+
+            //// removes previous highlighting (so modified words won't remain highlighted)
+            codeRichTextBox.SelectionStart = m_nLineStart;
+            codeRichTextBox.SelectionLength = m_nLineLength;
+            codeRichTextBox.SelectionColor = originalColor;
+
+       
+
+            // getting keywords/functions
+            string keywords = @"\b(public|private|partial|static|namespace|class|using|void|foreach|in)\b";
+            MatchCollection keywordMatches = Regex.Matches(m_strLine, keywords);
+
+            // getting types/classes from the text 
+            string types = @"\b(Console)\b";
+            MatchCollection typeMatches = Regex.Matches(m_strLine, types);
+            
+            // getting comments (inline )
+            string comments = @"(\/\/.+|\/\*.+\*\/)";
+            MatchCollection commentMatches = Regex.Matches(m_strLine, comments);
+
+            // getting strings
+            string strings = @"\{.+\}";
+            MatchCollection stringMatches = Regex.Matches(m_strLine, strings);
+
+            // scanning...
+            foreach (Match m in keywordMatches)
+            {
+                codeRichTextBox.SelectionStart = m.Index + m_nLineStart;
+                
+                codeRichTextBox.SelectionLength = m.Length;
+                
+                codeRichTextBox.SelectionColor = Color.Blue;
+
+            }
+
+            foreach (Match m in typeMatches)
+            {
+                codeRichTextBox.SelectionStart = m.Index + m_nLineStart;
+                codeRichTextBox.SelectionLength = m.Length;
+                codeRichTextBox.SelectionColor = Color.DarkCyan;
+            }
+
+            foreach (Match m in commentMatches)
+            {
+                codeRichTextBox.SelectionStart = m.Index + m_nLineStart;
+                codeRichTextBox.SelectionLength = m.Length;
+                codeRichTextBox.SelectionColor = Color.Green;
+            }
+
+            foreach (Match m in stringMatches)
+            {
+                codeRichTextBox.SelectionStart = m.Index + m_nLineStart;
+                codeRichTextBox.SelectionLength = m.Length;
+                codeRichTextBox.SelectionColor = Color.Red;
+            }
+
+            // restoring the original colors, for further writing
+            codeRichTextBox.SelectionStart = originalIndex + m_nLineStart;
+            codeRichTextBox.SelectionLength = originalLength;
+            codeRichTextBox.SelectionColor = originalColor;
+
+            // giving back the focus
+            codeRichTextBox.Focus();
+            
+        }
+    }
+}
