@@ -1,0 +1,208 @@
+//This is the code of the MainForm
+//the code included: new, Open, Save, Save as, Copy, Cut, Paste, SelectAll, Clear
+//undo and redo haven't been solved and will be updated tomorrow
+//the things haven't been come through: search, Help
+//some difficult stuffs: Syntax HighLight (50% solved), Syntax AutoComplete (0% solved), Line AutoNumbering (50% solved), etc
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.IO;
+
+namespace NotePad__
+{
+    public partial class MainForm : Form
+    {
+        public MainForm()
+        {
+            InitializeComponent();
+        }
+
+
+        /// <summary>
+        /// Create new tab page 
+        /// </summary>
+        /// <param name="tabName">name of the tab</param>
+        private TabPage CreateNewTabPage(string tabName)
+        {
+            //Create a new Tabpage
+            TabPage newTabPage = new TabPage(tabName);
+
+            //Declare a numbering RichTextBox to number lines of main RichTextBox
+            MyTextBox myTextBox = new MyTextBox();
+        
+            //Add main and numbering TextBox to tabPage
+            newTabPage.Controls.Add(myTextBox);
+
+            //Fill the form by myTextBox
+            myTextBox.Dock = DockStyle.Fill;
+       
+            //Add tabPage to tabControl
+            tabControl.TabPages.Add(newTabPage);
+
+            //switch to the new tab
+            tabControl.SelectedTab = newTabPage;
+            return newTabPage;
+        }
+
+        /// <summary>
+        /// Get the current main TextBox selected
+        /// </summary>
+        private RichTextBox GetCurrentTextBox()
+        {
+            if (tabControl.SelectedTab != null)
+                return tabControl.SelectedTab.Controls[0].Controls[0] as RichTextBox;
+            return null;
+        }
+
+        /// <summary>
+        /// Create a new tab
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CreateNewTabPage("New Tab " + (tabControl.TabPages.Count + 1).ToString());
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (GetCurrentTextBox() != null) GetCurrentTextBox().Copy();
+        }
+
+        private void cutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (GetCurrentTextBox() != null) GetCurrentTextBox().Cut();
+        }
+
+        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (GetCurrentTextBox() != null) GetCurrentTextBox().Paste();
+        }
+
+        /// <summary> 
+        /// open the choosen file
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            //create a new file dialog 
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            //Pop up the file dialog and check if user press open button 
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                //Create a new tab page and declare an instance to hold main TextBox
+                RichTextBox newTextBox = CreateNewTabPage(openFileDialog.SafeFileName).Controls[0].Controls[0] as RichTextBox;
+                //Get the path of the File
+                string filePath = openFileDialog.FileName;
+                //Get the text of the file
+                string fileText = File.ReadAllText(filePath);
+                //Set the text of current text box by file Text 
+                newTextBox.Text = fileText;
+            }
+
+        }
+
+        /// <summary>
+        /// save file  
+        /// haven't solved: implicit save file
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            //Create a save file Dialog
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+
+            //Pop up the save File Dialog check if user press Save button
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                //Declare a Stream variable to hold the open file to write in
+                using (Stream s = File.Open(saveFileDialog.FileName, FileMode.Create))
+                {
+                    //Write the text into the new file 
+                    using (StreamWriter sw = new StreamWriter(s))
+                    {
+                        sw.Write(GetCurrentTextBox().Text);
+
+                        //change the name of the tab by file name
+                        tabControl.SelectedTab.Text = Path.GetFileName(saveFileDialog.FileName);
+
+                    }
+                }
+            }
+
+        }
+
+        private void deleteStripButton_Click(object sender, EventArgs e)
+        {
+            if (tabControl.SelectedTab != null)
+                tabControl.TabPages.Remove(tabControl.SelectedTab);
+        }
+        /// <summary>
+        /// basically nothing is different from save button at this time 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //Create a save file Dialog
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+
+            //Pop up the save File Dialog check if user press Save button
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                //Declare a Stream variable to hold the open file to write in
+                using (Stream s = File.Open(saveFileDialog.FileName, FileMode.Create))
+                {
+                    //Write the text into the new file 
+                    using (StreamWriter sw = new StreamWriter(s))
+                    {
+                        sw.Write(GetCurrentTextBox().Text);
+
+                    }
+                }
+            }
+        }
+
+        private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (GetCurrentTextBox() != null) GetCurrentTextBox().SelectAll();
+        }
+        /// <summary>
+        /// undo: haven't solved
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+
+        }
+
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (GetCurrentTextBox() != null) GetCurrentTextBox().Redo();
+        }
+
+        private void clearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (GetCurrentTextBox() != null) GetCurrentTextBox().Clear();
+            
+        }
+
+        
+    }
+}
